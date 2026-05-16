@@ -1,0 +1,82 @@
+ ### **Optimized Master Prompt: Property Rent Management SaaS (UAE/GCC)**
+
+**Role:** Senior Full-Stack Engineer & Architect.
+**Objective:** Build a production-grade, mobile-first SaaS for UAE landlords using a modular, 5-phase approach.
+
+---
+
+### **1. Global Technical Stack & Architecture**
+
+* **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS, shadcn/ui, TanStack (Table/Query), Framer Motion, React Hook Form + Zod.
+* **Backend:** NestJS, Prisma ORM, PostgreSQL (with UUID, `createdAt`, `updatedAt`, Soft Delete).
+* **Infrastructure:** AWS S3 (Files), Redis/BullMQ (Jobs), JWT (Auth with Refresh Tokens/Cookies).
+* **Multi-Tenancy:** Strict `organizationId` isolation for all records.
+
+### **2. Global UI/UX Design System**
+
+* **Vibe:** GCC Fintech (e.g., Apple Health/UAE Banking). Simple, premium, high whitespace, soft shadows, rounded corners.
+* **Mobile-First:** Optimized for one-handed use, bottom navigation, large touch targets, swipe actions, and bottom sheets.
+* **Desktop:** Sidebar navigation; responsive card-view transitions for tables.
+
+### **3. Database Schema Requirements (Prisma Models)**
+
+Include relationships for: `User`, `Organization`, `Property`, `Unit`, `Tenant`, `Lease`, `Payment`, `Cheque`, `File`, `ActivityLog`, `MaintenanceRequest`, `Invoice`.
+Database connection string : DATABASE_URL="postgresql://postgres:admin@123@localhost:5432/LPADB" , create missing tables. Modifications confirm with me before changing.
+Other settings to use : 
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
+JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-in-production"
+JWT_EXPIRATION="15m"
+JWT_REFRESH_EXPIRATION="7d"
+FRONTEND_URL="http://localhost:3000"
+PORT=4000
+PRISMA_CLIENT_ENGINE_TYPE="library"
+
+
+### **4. Implementation Roadmap**
+
+#### **Phase 1: Foundation & Core Assets**
+
+* **Auth:** JWT-based Signup/Login, Password Reset, Email Verification, Rate Limiting.
+* **Workspace:** Organization-based landing; User profile (Name, Phone, Currency, Timezone).
+* **Inventory:** CRUD for **Properties** (Type: Apt, Villa, Office, etc.) and **Units** (Floor, Beds, Rent, Status: Occupied/Vacant/Maintenance).
+* **Dashboard:** Basic widgets (Total Properties, Occupancy Rate, Est. Revenue).
+
+#### **Phase 2: Tenants, Leases & Payments**
+
+* **Tenants:** Profile management including Emirates ID and Nationality.
+* **Leases:** Contract lifecycle (Start/End, Yearly Rent, Frequency: Monthly/Quarterly/Yearly/Custom).
+* **Payments:** Tracking system with status (Pending/Paid/Overdue/Partial). Auto-calculate balances.
+* **Files:** S3 integration for Lease PDFs, Emirates ID copies, and Receipts.
+
+#### **Phase 3: UAE Cheque System & Excel Engine (Business Core)**
+
+* **PDC Lifecycle:** Track Post-Dated Cheques (Pending → Deposited → Cleared/Bounced/Cancelled). Fields: Cheque #, Bank, Due Date.
+* **Installments:** Support multi-cheque rent splits (e.g., 4, 6, 12 cheques).
+* **Excel Engine:** Robust Import/Export for all modules. Must include: Column mapping, validation preview, duplicate detection, and rollback support.
+* **Reminders:** Redis/BullMQ scheduled tasks for cheque dates and lease expiry.
+
+#### **Phase 4: Teams & Operational Maintenance**
+
+* **RBAC:** Roles (Owner, Manager, Accountant, Staff) with granular permissions.
+* **Maintenance:** Issue reporting, status tracking (Open → In Progress → Resolved), and attachments.
+* **Audit Trail:** Global `ActivityLog` tracking all edits, payments, and deletions.
+* **Notifications:** Email system ready for future WhatsApp API integration.
+
+#### **Phase 5: AI & Automation (Smart OS)**
+
+* **AI Engine:** Intelligent Excel mapping and anomaly detection (payment gaps/duplicate data).
+* **Tenant Portal:** Self-service for payment history, receipt uploads, and maintenance requests.
+* **Finance:** Stripe/UAE Gateway integration; automated PDF Invoice/Receipt generation.
+* **Analytics:** Revenue/Occupancy forecasting and "At Risk" payment heatmaps.
+
+### **5. Deliverable Quality**
+
+* Provide clean, modular code following SOLID principles.
+* Implement global error handling, loading skeletons, and toast notifications.
+* Ensure the system is localization-ready (i.e., RTL/Arabic support structure).
+* Validated with the requirement.
+
+### **6. Action plan**
+Understand the prompt clearly and think deeply, ask if any questions. Work phase by phase. Start with phase 1. 
+
+
