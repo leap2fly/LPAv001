@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parental Control Settings</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; color: #2c3e50; }
+        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #eee; border-radius: 8px; }
+        .section h2 { margin-top: 0; font-size: 1.2em; color: #34495e; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="password"], input[type="number"], textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        button:hover { background-color: #2980b9; }
+        .log-list { max-height: 200px; overflow-y: auto; background: #f9f9f9; padding: 10px; border: 1px solid #ddd; font-size: 12px; }
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .hidden { display: none !important; }
+        .flex { display: flex; gap: 10px; align-items: center; }
+        .tag { background: #e0e0e0; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; }
+        .tag span { cursor: pointer; color: #c0392b; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="login-overlay">
+        <h2>Enter Master PIN</h2>
+        <input type="password" id="pin-input" placeholder="Enter PIN" style="width: 200px; margin-bottom: 10px;">
+        <button id="login-btn">Unlock Settings</button>
+        <p id="login-error" style="color: red; margin-top: 10px;"></p>
+    </div>
+
+    <div class="container hidden" id="main-content">
+        <h1>Parental Control Dashboard</h1>
+
+        <div class="section">
+            <h2>General Settings</h2>
+            <div class="form-group">
+                <label><input type="checkbox" id="safeSearch"> Enforce Safe Search (Google/YouTube)</label>
+            </div>
+            <div class="form-group">
+                <label>Change Master PIN:</label>
+                <div class="flex">
+                    <input type="password" id="new-pin" placeholder="New 4-digit PIN">
+                    <button id="save-pin">Update PIN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Website Blocking & Whitelisting</h2>
+            <div class="form-group">
+                <label>Add Blocked URL (Blacklist):</label>
+                <div class="flex">
+                    <input type="text" id="url-input" placeholder="e.g. facebook.com">
+                    <button id="add-url">Block</button>
+                </div>
+                <div id="url-list" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;"></div>
+            </div>
+            <div class="form-group" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
+                <label>Add Allowed URL (Whitelist - bypasses blocks):</label>
+                <div class="flex">
+                    <input type="text" id="allowed-url-input" placeholder="e.g. wikipedia.org">
+                    <button id="add-allowed-url" style="background-color: #27ae60;">Allow</button>
+                </div>
+                <div id="allowed-url-list" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Keyword Filtering</h2>
+            <div class="form-group">
+                <label>Add Restricted Keyword:</label>
+                <div class="flex">
+                    <input type="text" id="keyword-input">
+                    <button id="add-keyword">Add</button>
+                </div>
+                <div id="keyword-list" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Time Limits & Off-Hours</h2>
+            <div class="form-group">
+                <label><input type="checkbox" id="timeEnabled"> Enable Time Limits</label>
+            </div>
+            <div class="form-group">
+                <label>Daily Quota (Minutes):</label>
+                <input type="number" id="dailyQuota" min="1">
+            </div>
+            <div class="flex">
+                <div class="form-group">
+                    <label>Off-Hours Start:</label>
+                    <input type="time" id="offStart">
+                </div>
+                <div class="form-group">
+                    <label>Off-Hours End:</label>
+                    <input type="time" id="offEnd">
+                </div>
+            </div>
+            <button id="save-time">Save Time Settings</button>
+            <p>Current Usage Today: <span id="current-usage">0</span> minutes</p>
+            <button id="reset-usage" style="background-color: #e67e22;">Reset Usage for Today</button>
+        </div>
+
+        <div class="section">
+            <h2>Platform Specific Controls</h2>
+            <h3>YouTube</h3>
+            <div class="form-group">
+                <label><input type="checkbox" id="ytShorts"> Block YouTube Shorts</label>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="ytComments"> Block YouTube Comments</label>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="ytVideos"> Block YouTube Entirely</label>
+            </div>
+            <hr>
+            <h3>TikTok</h3>
+            <div class="form-group">
+                <label><input type="checkbox" id="ttEnabled"> Block TikTok Entirely</label>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Activity Logs</h2>
+            <div class="log-list" id="log-container"></div>
+            <button id="clear-logs" style="margin-top: 10px; background-color: #95a5a6;">Clear Logs</button>
+        </div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html>
