@@ -61,7 +61,7 @@ async function updateBlockingRules() {
       priority: 1,
       action: {
         type: "redirect",
-        redirect: { transform: { queryTransform: { addOrReplaceParams: [{ query: "safe", value: "active" }] } } }
+        redirect: { transform: { queryTransform: { addOrReplaceParams: [{ parameter: "safe", value: "active" }] } } }
       },
       condition: { urlFilter: "google.com/search", resourceTypes: ["main_frame"] }
     });
