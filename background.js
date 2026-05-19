@@ -103,6 +103,13 @@ async function updateBlockingRules() {
     removeRuleIds: oldRuleIds,
     addRules: rules
   });
+
+  // Ensure we are not stuck in "Blocked" mode if usage was just reset or it's a new day
+  const { usage } = await chrome.storage.local.get("usage");
+  const now = new Date();
+  if (usage && usage.date === now.toLocaleDateString() && usage.minutes < settings.timeLimits.dailyQuota) {
+      unblockAllBrowsing();
+  }
 }
 
 // Listen for settings changes

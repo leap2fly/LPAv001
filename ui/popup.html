@@ -1,18 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <style>
-        body { width: 250px; padding: 15px; font-family: sans-serif; text-align: center; }
-        .status { margin-bottom: 15px; color: #27ae60; font-weight: bold; }
-        button { background: #3498db; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; }
-        .footer { margin-top: 15px; font-size: 10px; color: #95a5a6; }
+        :root {
+            --primary: #4f46e5;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            width: 300px;
+            padding: 20px;
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--text-main);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .status-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .status-row:last-child { margin-bottom: 0; }
+
+        .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .value {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover { background: #4338ca; }
+
+        .footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
-    <h3>Parental Control</h3>
-    <div class="status">🛡️ Protection Active</div>
-    <button id="open-settings">Management Dashboard</button>
-    <div class="footer">Version 1.0.0 (Local Mode)</div>
+    <div class="header">
+        <span class="logo">🛡️ PC-Parental</span>
+    </div>
+
+    <div class="status-card">
+        <div class="status-row">
+            <span class="label">Usage Today</span>
+            <span class="value"><span id="usage">0</span>m</span>
+        </div>
+        <div class="status-row">
+            <span class="label">Limit Remaining</span>
+            <span class="value"><span id="remaining">∞</span></span>
+        </div>
+        <div class="progress-bar">
+            <div id="progress" class="progress-fill"></div>
+        </div>
+    </div>
+
+    <button id="open-settings" class="btn">
+        ⚙️ Manage Dashboard
+    </button>
+
+    <div class="footer">
+        Protection is Active & Encrypted
+    </div>
     <script src="popup.js"></script>
 </body>
 </html>

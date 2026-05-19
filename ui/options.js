@@ -9,8 +9,27 @@ document.getElementById('login-btn').addEventListener('click', async () => {
         document.getElementById('main-content').classList.remove('hidden');
         loadSettings();
     } else {
-        document.getElementById('login-error').textContent = "Incorrect PIN";
+        const err = document.getElementById('login-error');
+        err.textContent = "Incorrect PIN";
+        err.style.animation = "shake 0.2s";
+        setTimeout(() => err.style.animation = "", 200);
     }
+});
+
+// Tab Switching Logic
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+        // Update Nav UI
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        // Update Content UI
+        const tabId = item.getAttribute('data-tab');
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+        document.getElementById(tabId).classList.remove('hidden');
+    });
 });
 
 async function loadSettings() {
@@ -19,22 +38,30 @@ async function loadSettings() {
     const usage = data.usage;
     const logs = data.logs || [];
 
+    // General
     document.getElementById('safeSearch').checked = currentSettings.safeSearch;
+    document.getElementById('ss-status').textContent = currentSettings.safeSearch ? "On" : "Off";
+
+    // Time
     document.getElementById('timeEnabled').checked = currentSettings.timeLimits.enabled;
     document.getElementById('dailyQuota').value = currentSettings.timeLimits.dailyQuota;
+    document.getElementById('quota-display').textContent = currentSettings.timeLimits.dailyQuota;
     document.getElementById('offStart').value = currentSettings.timeLimits.offHours.start;
     document.getElementById('offEnd').value = currentSettings.timeLimits.offHours.end;
+    document.getElementById('current-usage').textContent = usage ? usage.minutes : 0;
 
+    // Apps
     document.getElementById('ytShorts').checked = currentSettings.platforms.youtube.shorts;
     document.getElementById('ytComments').checked = currentSettings.platforms.youtube.comments;
     document.getElementById('ytVideos').checked = currentSettings.platforms.youtube.videos;
     document.getElementById('ttEnabled').checked = currentSettings.platforms.tiktok.enabled;
 
-    document.getElementById('current-usage').textContent = usage ? usage.minutes : 0;
-
+    // Web Lists
     renderList('url-list', currentSettings.blockedUrls || [], 'blockedUrls');
     renderList('allowed-url-list', currentSettings.allowedUrls || [], 'allowedUrls');
     renderList('keyword-list', currentSettings.blockedKeywords || [], 'blockedKeywords');
+
+    // Logs
     renderLogs(logs);
 }
 
@@ -44,14 +71,16 @@ function renderList(elementId, items, settingsKey) {
     items.forEach((item, index) => {
         const tag = document.createElement('div');
         tag.className = 'tag';
-        tag.textContent = item;
-        const removeBtn = document.createElement('span');
-        removeBtn.textContent = '×';
-        removeBtn.onclick = () => {
-            currentSettings[settingsKey].splice(index, 1);
+        tag.innerHTML = `
+            ${item}
+            <span data-index="${index}" data-key="${settingsKey}">&times;</span>
+        `;
+        tag.querySelector('span').onclick = (e) => {
+            const idx = e.target.getAttribute('data-index');
+            const key = e.target.getAttribute('data-key');
+            currentSettings[key].splice(idx, 1);
             saveSettings();
         };
-        tag.appendChild(removeBtn);
         container.appendChild(tag);
     });
 }
@@ -59,18 +88,20 @@ function renderList(elementId, items, settingsKey) {
 function renderLogs(logs) {
     const container = document.getElementById('log-container');
     container.innerHTML = logs.map(log => `
-        <div>[${new Date(log.timestamp).toLocaleString()}] ${log.url}</div>
+        <tr>
+            <td style="color: var(--text-muted)">${new Date(log.timestamp).toLocaleTimeString()}</td>
+            <td title="${log.url}">${log.url}</td>
+        </tr>
     `).join('');
 }
 
 async function saveSettings() {
     await chrome.storage.local.set({ settings: currentSettings });
     loadSettings();
-    // Notify background to update rules
     chrome.runtime.sendMessage({ action: "updateRules" });
 }
 
-// Event Listeners for UI updates
+// Global Event Listeners
 document.getElementById('safeSearch').onchange = (e) => {
     currentSettings.safeSearch = e.target.checked;
     saveSettings();
@@ -111,39 +142,50 @@ document.getElementById('save-pin').onclick = () => {
     if (newPin.length >= 4) {
         currentSettings.masterPin = newPin;
         saveSettings();
-        alert("PIN Updated");
+        alert("PIN Updated successfully");
+        document.getElementById('new-pin').value = '';
+    } else {
+        alert("PIN must be at least 4 digits");
     }
 };
 
 document.getElementById('save-time').onclick = () => {
     currentSettings.timeLimits.enabled = document.getElementById('timeEnabled').checked;
-    currentSettings.timeLimits.dailyQuota = parseInt(document.getElementById('dailyQuota').value);
+    currentSettings.timeLimits.dailyQuota = parseInt(document.getElementById('dailyQuota').value) || 0;
     currentSettings.timeLimits.offHours.start = document.getElementById('offStart').value;
     currentSettings.timeLimits.offHours.end = document.getElementById('offEnd').value;
     saveSettings();
+    alert("Time settings saved");
 };
 
 document.getElementById('reset-usage').onclick = () => {
-    chrome.runtime.sendMessage({ action: "resetUsage" }, () => {
-        loadSettings();
-    });
+    if (confirm("Are you sure you want to reset today's usage stats?")) {
+        chrome.runtime.sendMessage({ action: "resetUsage" }, () => {
+            loadSettings();
+        });
+    }
 };
 
 document.getElementById('clear-logs').onclick = async () => {
-    await chrome.storage.local.set({ logs: [] });
-    loadSettings();
+    if (confirm("Clear all activity logs?")) {
+        await chrome.storage.local.set({ logs: [] });
+        loadSettings();
+    }
 };
 
-// Platform toggles
-['ytShorts', 'ytComments', 'ytVideos'].forEach(id => {
-    document.getElementById(id).onchange = (e) => {
-        const key = id.replace('yt', '').toLowerCase();
-        currentSettings.platforms.youtube[key] = e.target.checked;
+// App Toggle Listener
+['ytShorts', 'ytComments', 'ytVideos', 'ttEnabled', 'timeEnabled'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.onchange = (e) => {
+        if (id === 'timeEnabled') {
+            currentSettings.timeLimits.enabled = e.target.checked;
+        } else if (id === 'ttEnabled') {
+            currentSettings.platforms.tiktok.enabled = e.target.checked;
+        } else {
+            const key = id.replace('yt', '').toLowerCase();
+            currentSettings.platforms.youtube[key] = e.target.checked;
+        }
         saveSettings();
     };
 });
-
-document.getElementById('ttEnabled').onchange = (e) => {
-    currentSettings.platforms.tiktok.enabled = e.target.checked;
-    saveSettings();
-};
