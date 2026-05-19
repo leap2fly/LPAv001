@@ -28,16 +28,11 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-let isUpdating = false;
 async function updateBlockingRules() {
-  if (isUpdating) return;
-  isUpdating = true;
+  const { settings } = await chrome.storage.local.get("settings");
+  if (!settings) return;
 
-  try {
-    const { settings } = await chrome.storage.local.get("settings");
-    if (!settings) return;
-
-    const rules = [];
+  const rules = [];
 
   // URL blocking rules (Priority 2)
   (settings.blockedUrls || []).forEach((url, index) => {
@@ -62,38 +57,36 @@ async function updateBlockingRules() {
   // Safe Search for Google
   if (settings.safeSearch) {
     rules.push({
-      id: 101,
+      id: 1,
       priority: 1,
       action: {
         type: "redirect",
         redirect: {
-          // Redirect while preserving other query params, but ONLY if safe is not already set
+          // Using regexSubstitution as a robust alternative to queryTransform
           regexSubstitution: "https://www.google.com/search?safe=active&\\1"
         }
       },
       condition: {
-        // Match only if 'safe=active' is NOT in the query string
-        regexFilter: "^https://www\\.google\\.com/search\\?((?!safe=active).)*$",
+        regexFilter: "^https://www\\.google\\.com/search\\?(.*)",
         resourceTypes: ["main_frame"]
       }
     });
     // Safe Search for Bing
     rules.push({
-      id: 103,
+      id: 3,
       priority: 1,
       action: {
         type: "redirect",
         redirect: { regexSubstitution: "https://www.bing.com/search?adlt=strict&\\1" }
       },
       condition: {
-        // Match only if 'adlt=strict' is NOT in the query string
-        regexFilter: "^https://www\\.bing\\.com/search\\?((?!adlt=strict).)*$",
+        regexFilter: "^https://www\\.bing\\.com/search\\?(.*)",
         resourceTypes: ["main_frame"]
       }
     });
     // YouTube Restricted Mode
     rules.push({
-        id: 102,
+        id: 2,
         priority: 1,
         action: {
             type: "modifyHeaders",
@@ -106,20 +99,10 @@ async function updateBlockingRules() {
   const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
   const oldRuleIds = oldRules.map(r => r.id);
 
-    await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: oldRuleIds,
-      addRules: rules
-    });
-
-    // Ensure we are not stuck in "Blocked" mode if usage was just reset or it's a new day
-    const { usage } = await chrome.storage.local.get("usage");
-    const now = new Date();
-    if (usage && usage.date === now.toLocaleDateString() && usage.minutes < settings.timeLimits.dailyQuota) {
-        unblockAllBrowsing();
-    }
-  } finally {
-    isUpdating = false;
-  }
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: oldRuleIds,
+    addRules: rules
+  });
 }
 
 // Listen for settings changes
