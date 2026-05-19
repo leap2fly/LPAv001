@@ -28,11 +28,16 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+let isUpdating = false;
 async function updateBlockingRules() {
-  const { settings } = await chrome.storage.local.get("settings");
-  if (!settings) return;
+  if (isUpdating) return;
+  isUpdating = true;
 
-  const rules = [];
+  try {
+    const { settings } = await chrome.storage.local.get("settings");
+    if (!settings) return;
+
+    const rules = [];
 
   // URL blocking rules (Priority 2)
   (settings.blockedUrls || []).forEach((url, index) => {
@@ -57,7 +62,7 @@ async function updateBlockingRules() {
   // Safe Search for Google
   if (settings.safeSearch) {
     rules.push({
-      id: 1,
+      id: 101,
       priority: 1,
       action: {
         type: "redirect",
@@ -73,7 +78,7 @@ async function updateBlockingRules() {
     });
     // Safe Search for Bing
     rules.push({
-      id: 3,
+      id: 103,
       priority: 1,
       action: {
         type: "redirect",
@@ -86,7 +91,7 @@ async function updateBlockingRules() {
     });
     // YouTube Restricted Mode
     rules.push({
-        id: 2,
+        id: 102,
         priority: 1,
         action: {
             type: "modifyHeaders",
@@ -99,16 +104,19 @@ async function updateBlockingRules() {
   const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
   const oldRuleIds = oldRules.map(r => r.id);
 
-  await chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: oldRuleIds,
-    addRules: rules
-  });
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: oldRuleIds,
+      addRules: rules
+    });
 
-  // Ensure we are not stuck in "Blocked" mode if usage was just reset or it's a new day
-  const { usage } = await chrome.storage.local.get("usage");
-  const now = new Date();
-  if (usage && usage.date === now.toLocaleDateString() && usage.minutes < settings.timeLimits.dailyQuota) {
-      unblockAllBrowsing();
+    // Ensure we are not stuck in "Blocked" mode if usage was just reset or it's a new day
+    const { usage } = await chrome.storage.local.get("usage");
+    const now = new Date();
+    if (usage && usage.date === now.toLocaleDateString() && usage.minutes < settings.timeLimits.dailyQuota) {
+        unblockAllBrowsing();
+    }
+  } finally {
+    isUpdating = false;
   }
 }
 
