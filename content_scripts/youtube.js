@@ -16,25 +16,14 @@
         let css = '';
         if (ytSettings.shorts) {
             css += `
-                /* Hide Shorts in sidebars, guide, and search */
-                ytd-guide-entry-renderer:has(a[href^="/shorts"]),
-                ytd-mini-guide-entry-renderer[aria-label="Shorts"],
+                /* Hide Shorts in various locations using more robust selectors */
+                [is-shorts],
+                ytd-grid-video-renderer:has(a[href^="/shorts"]),
                 ytd-reel-shelf-renderer,
                 ytd-rich-shelf-renderer[is-shorts],
                 a[href^="/shorts"],
-                [title="Shorts"],
-                [aria-label="Shorts"],
-                /* Hide the Shorts video player/page if they somehow get there */
-                ytd-shorts,
-                /* Hide Shorts shelf on home and search results */
-                ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts])
-                { display: none !important; }
+                [aria-label="Shorts"] { display: none !important; }
             `;
-
-            // If the user is currently ON a shorts URL, redirect them home
-            if (window.location.pathname.startsWith('/shorts/')) {
-                window.location.href = 'https://www.youtube.com/';
-            }
         }
         if (ytSettings.comments) {
             css += `ytd-comments, #comments { display: none !important; }`;
@@ -47,27 +36,8 @@
     }
 
     applyYouTubeRestrictions();
-
-    // Use multiple triggers for YouTube SPA navigation
     window.addEventListener('yt-navigate-finish', applyYouTubeRestrictions);
-    window.addEventListener('popstate', applyYouTubeRestrictions);
 
-    // More aggressive observer for the dynamic content
-    const observer = new MutationObserver((mutations) => {
-        // Only re-apply if we don't see our style tag or on URL change
-        if (!document.getElementById('pc-yt-styles')) {
-            applyYouTubeRestrictions();
-        }
-    });
-
-    if (document.head) {
-        observer.observe(document.head, { childList: true });
-    } else {
-        window.addEventListener('DOMContentLoaded', () => {
-            observer.observe(document.head, { childList: true });
-        });
-    }
-
-    // Periodic check as a failsafe for the SPA
-    setInterval(applyYouTubeRestrictions, 2000);
+    const observer = new MutationObserver(applyYouTubeRestrictions);
+    observer.observe(document.head, { childList: true });
 })();

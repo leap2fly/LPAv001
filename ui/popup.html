@@ -1,35 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        :root {
-            --bg: #ffffff;
-            --text: #1c1e21;
-            --primary: #0084ff;
-            --border: #dddfe2;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #242526;
-                --text: #e4e6eb;
-                --primary: #2d88ff;
-                --border: #3e4042;
-            }
-        }
-        body { width: 300px; padding: 16px; font-family: sans-serif; background: var(--bg); color: var(--text); }
-        .stat-card { background: var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-        .btn { background: var(--primary); color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        body { width: 250px; padding: 15px; font-family: sans-serif; text-align: center; }
+        .status { margin-bottom: 15px; color: #27ae60; font-weight: bold; }
+        button { background: #3498db; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; cursor: pointer; }
+        .footer { margin-top: 15px; font-size: 10px; color: #95a5a6; }
     </style>
 </head>
 <body>
-    <h3 style="margin-top: 0;">🛡️ Safety Feed</h3>
-    <div class="stat-card">
-        <div style="font-size: 0.8rem; opacity: 0.8;">Usage Today</div>
-        <div style="font-size: 1.2rem; font-weight: bold;"><span id="usage">0</span>m</div>
-    </div>
-    <button id="open-settings" class="btn">View Dashboard</button>
+    <h3>Parental Control</h3>
+    <div class="status">🛡️ Protection Active</div>
+    <button id="open-settings">Management Dashboard</button>
+    <div class="footer">Version 1.0.0 (Local Mode)</div>
     <script src="popup.js"></script>
 </body>
 </html>
