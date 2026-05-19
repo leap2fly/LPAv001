@@ -67,12 +67,13 @@ async function updateBlockingRules() {
       action: {
         type: "redirect",
         redirect: {
-          // Using regexSubstitution as a robust alternative to queryTransform
+          // Redirect while preserving other query params, but ONLY if safe is not already set
           regexSubstitution: "https://www.google.com/search?safe=active&\\1"
         }
       },
       condition: {
-        regexFilter: "^https://www\\.google\\.com/search\\?(.*)",
+        // Match only if 'safe=active' is NOT in the query string
+        regexFilter: "^https://www\\.google\\.com/search\\?((?!safe=active).)*$",
         resourceTypes: ["main_frame"]
       }
     });
@@ -85,7 +86,8 @@ async function updateBlockingRules() {
         redirect: { regexSubstitution: "https://www.bing.com/search?adlt=strict&\\1" }
       },
       condition: {
-        regexFilter: "^https://www\\.bing\\.com/search\\?(.*)",
+        // Match only if 'adlt=strict' is NOT in the query string
+        regexFilter: "^https://www\\.bing\\.com/search\\?((?!adlt=strict).)*$",
         resourceTypes: ["main_frame"]
       }
     });
