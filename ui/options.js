@@ -11,47 +11,28 @@ document.getElementById('login-btn').addEventListener('click', async () => {
 });
 
 async function loadSettings() {
-    const data = await chrome.storage.local.get(["settings", "usage"]);
+    const data = await chrome.storage.local.get(["settings", "usage", "logs"]);
     currentSettings = data.settings;
 
-    document.getElementById('usage').textContent = data.usage ? data.usage.minutes : 0;
+    const used = data.usage ? data.usage.minutes : 0;
+    document.getElementById('usage').textContent = used;
+    document.getElementById('remaining').textContent = currentSettings.timeLimits.dailyQuota - used;
+
     document.getElementById('dailyQuota').value = currentSettings.timeLimits.dailyQuota;
     document.getElementById('offStart').value = currentSettings.timeLimits.offHours.start;
     document.getElementById('offEnd').value = currentSettings.timeLimits.offHours.end;
 
-    renderList('url-list', currentSettings.blockedUrls || [], 'blockedUrls');
-}
-
-function renderList(elementId, items, settingsKey) {
-    const container = document.getElementById(elementId);
-    container.innerHTML = items.map((item, idx) => `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:0.5px solid var(--separator);">
-            <span>${item}</span>
-            <span style="color:red; cursor:pointer;" onclick="removeItem('${settingsKey}', ${idx})">Delete</span>
-        </div>
+    document.getElementById('log-list').innerHTML = (data.logs || []).slice(0, 10).map(l => `
+        <div style="padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1);">${l.url.substring(0, 40)}...</div>
     `).join('');
 }
 
-window.removeItem = async (key, idx) => {
-    currentSettings[key].splice(idx, 1);
-    await chrome.storage.local.set({ settings: currentSettings });
-    loadSettings();
-    chrome.runtime.sendMessage({ action: "updateRules" });
-};
-
-document.getElementById('add-url').onclick = () => {
-    const val = document.getElementById('url-input').value.trim();
-    if (val) {
-        currentSettings.blockedUrls.push(val);
-        chrome.storage.local.set({ settings: currentSettings }).then(loadSettings);
-        document.getElementById('url-input').value = '';
-        chrome.runtime.sendMessage({ action: "updateRules" });
-    }
-};
-
-document.getElementById('save-all').onclick = () => {
+document.getElementById('save-settings').onclick = () => {
     currentSettings.timeLimits.dailyQuota = parseInt(document.getElementById('dailyQuota').value);
     currentSettings.timeLimits.offHours.start = document.getElementById('offStart').value;
     currentSettings.timeLimits.offHours.end = document.getElementById('offEnd').value;
-    chrome.storage.local.set({ settings: currentSettings }).then(() => alert("Configuration Updated"));
+    chrome.storage.local.set({ settings: currentSettings }).then(() => {
+        alert("Grid Synchronized");
+        loadSettings();
+    });
 };
