@@ -61,9 +61,28 @@ async function updateBlockingRules() {
       priority: 1,
       action: {
         type: "redirect",
-        redirect: { transform: { queryTransform: { addOrReplaceParams: [{ parameter: "safe", value: "active" }] } } }
+        redirect: {
+          // Using regexSubstitution as a robust alternative to queryTransform
+          regexSubstitution: "https://www.google.com/search?safe=active&\\1"
+        }
       },
-      condition: { urlFilter: "google.com/search", resourceTypes: ["main_frame"] }
+      condition: {
+        regexFilter: "^https://www\\.google\\.com/search\\?(.*)",
+        resourceTypes: ["main_frame"]
+      }
+    });
+    // Safe Search for Bing
+    rules.push({
+      id: 3,
+      priority: 1,
+      action: {
+        type: "redirect",
+        redirect: { regexSubstitution: "https://www.bing.com/search?adlt=strict&\\1" }
+      },
+      condition: {
+        regexFilter: "^https://www\\.bing\\.com/search\\?(.*)",
+        resourceTypes: ["main_frame"]
+      }
     });
     // YouTube Restricted Mode
     rules.push({
