@@ -1,435 +1,246 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Parental Control - Dashboard</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Feed - Dashboard</title>
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg: #f8fafc;
+            --bg-color: #f0f2f5;
             --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --danger: #ef4444;
-            --success: #22c55e;
+            --text-color: #1c1e21;
+            --text-muted: #65676b;
+            --primary-color: #0084ff;
+            --danger-color: #fa383e;
+            --success-color: #42b72a;
+            --border-color: #dddfe2;
+            --nav-bg: #ffffff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #18191a;
+                --card-bg: #242526;
+                --text-color: #e4e6eb;
+                --text-muted: #b0b3b8;
+                --primary-color: #2d88ff;
+                --danger-color: #f35359;
+                --success-color: #45bd62;
+                --border-color: #3e4042;
+                --nav-bg: #242526;
+            }
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg);
             margin: 0;
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-        }
-
-        /* Sidebar Navigation */
-        .sidebar {
-            width: 240px;
-            background: var(--card-bg);
-            border-right: 1px solid var(--border);
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
-            padding: 20px 0;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .logo {
-            padding: 0 24px 24px;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary);
+        /* Top Bar */
+        .top-bar {
+            height: 56px;
+            background-color: var(--nav-bg);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            gap: 10px;
+            padding: 0 16px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
         }
 
-        .nav-item {
-            padding: 12px 24px;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
-        }
-
-        .nav-item:hover {
-            background: #f1f5f9;
-            color: var(--text-main);
-        }
-
-        .nav-item.active {
-            background: #eef2ff;
-            color: var(--primary);
-            border-right: 3px solid var(--primary);
-        }
-
-        /* Main Content Area */
-        .main {
+        /* Content Scroll Area */
+        .feed-container {
             flex: 1;
-            padding: 40px;
             overflow-y: auto;
-        }
-
-        .content-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .header {
-            margin-bottom: 32px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.875rem;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            margin: 8px 0 0;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 80px; /* Space for bottom nav */
         }
 
         .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
-        .card h2 {
-            margin: 0 0 20px;
-            font-size: 1.125rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Forms & Inputs */
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.875rem; }
-
-        input[type="text"],
-        input[type="password"],
-        input[type="number"],
-        input[type="time"] {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.875rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.875rem;
-            transition: background 0.2s;
-        }
-
-        .btn:hover { background: var(--primary-hover); }
-        .btn-danger { background: var(--danger); }
-        .btn-success { background: var(--success); }
-
-        /* Switches */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input { opacity: 0; width: 0; height: 0; }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #cbd5e1;
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px; width: 18px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(20px); }
-
-        .setting-row {
+        .card-header {
+            font-weight: bold;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
         }
-        .setting-row:last-child { border-bottom: none; }
 
-        /* Lists/Tags */
-        .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .tag {
-            background: #f1f5f9;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 0.75rem;
+        /* Status Ring */
+        .status-hub {
+            text-align: center;
+            padding: 24px 0;
+        }
+
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 8px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            margin: 0 auto 16px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 6px;
-            border: 1px solid var(--border);
+            justify-content: center;
+            font-weight: bold;
         }
-        .tag span { cursor: pointer; font-size: 1rem; line-height: 0; color: var(--text-muted); }
-        .tag span:hover { color: var(--danger); }
 
-        /* Logs */
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-        .log-table th { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 500; }
-        .log-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        /* Auth Overlay */
-        #login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 1000;
-            display: flex; align-items: center; justify-content: center;
+        /* Lists */
+        .feed-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
-        .auth-card {
-            width: 320px; text-align: center;
-            padding: 40px; border-radius: 12px; border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        .feed-item:last-child { border-bottom: none; }
+        .feed-item-title { font-size: 0.9rem; font-weight: 500; }
+        .feed-item-meta { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 64px;
+            background-color: var(--nav-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-btn.active { color: var(--primary-color); }
+        .nav-btn span { font-size: 1.4rem; }
+
+        /* Form Elements */
+        input {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
         }
 
         .hidden { display: none !important; }
-        .flex-row { display: flex; gap: 12px; }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 24px;
+        }
     </style>
 </head>
 <body>
     <div id="login-overlay">
-        <div class="auth-card">
-            <div class="logo">🛡️ PC-Parental</div>
-            <h2>Verify Identity</h2>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">Enter your master PIN to access the dashboard.</p>
-            <input type="password" id="pin-input" placeholder="••••" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; margin-bottom: 16px;">
-            <button id="login-btn" class="btn" style="width: 100%;">Unlock Dashboard</button>
-            <p id="login-error" style="color: var(--danger); margin-top: 12px; font-size: 0.875rem;"></p>
-        </div>
+        <h2>🛡️ Safety Feed</h2>
+        <p>Unlock with Master PIN</p>
+        <input type="password" id="pin-input" style="width: 200px; text-align: center; font-size: 2rem;">
+        <button id="login-btn" style="width: 200px; margin-top: 20px;">Unlock</button>
     </div>
 
-    <aside class="sidebar">
-        <div class="logo">🛡️ Parental Control</div>
-        <div class="nav-item active" data-tab="tab-overview">📊 Overview</div>
-        <div class="nav-item" data-tab="tab-web">🌐 Web Controls</div>
-        <div class="nav-item" data-tab="tab-time">⏱️ Time Limits</div>
-        <div class="nav-item" data-tab="tab-apps">📱 App Controls</div>
-        <div class="nav-item" data-tab="tab-logs">📜 Activity Logs</div>
-        <div class="nav-item" data-tab="tab-settings">⚙️ Settings</div>
-    </aside>
+    <div class="top-bar">🛡️ PC-Safety Feed</div>
 
-    <main class="main">
-        <div class="content-container hidden" id="main-content">
+    <div class="feed-container hidden" id="main-content">
+        <!-- Home Tab -->
+        <section id="tab-home" class="tab-content">
+            <div class="card status-hub">
+                <div class="progress-ring">
+                    <div style="font-size: 1.5rem;"><span id="remaining-display">∞</span></div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Remaining</div>
+                </div>
+                <div id="status-badge" style="color: var(--success-color); font-weight: bold;">ACTIVE PROTECTION</div>
+            </div>
 
-            <!-- Tab: Overview -->
-            <section id="tab-overview" class="tab-content">
-                <div class="header">
-                    <h1>Dashboard Overview</h1>
-                    <p>Summary of today's protection status.</p>
+            <div class="card">
+                <div class="card-header">Recent Activity</div>
+                <div id="log-feed">
+                    <!-- Logs go here as feed items -->
                 </div>
-                <div class="flex-row">
-                    <div class="card" style="flex: 1;">
-                        <h2>Daily Usage</h2>
-                        <div style="font-size: 2rem; font-weight: 700;"><span id="current-usage">0</span>m</div>
-                        <p style="color: var(--text-muted);">Used out of <span id="quota-display">0</span>m quota</p>
-                    </div>
-                    <div class="card" style="flex: 1;">
-                        <h2>Protection Status</h2>
-                        <div id="status-tag" class="btn btn-success" style="cursor: default; padding: 4px 12px; display: inline-block;">ACTIVE</div>
-                        <p style="color: var(--text-muted); margin-top: 10px;">SafeSearch: <span id="ss-status">On</span></p>
-                    </div>
-                </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Tab: Web Controls -->
-            <section id="tab-web" class="tab-content hidden">
-                <div class="header">
-                    <h1>Web Filtering</h1>
-                    <p>Manage which websites and content are restricted.</p>
-                </div>
-                <div class="card">
-                    <h2>Blocked Sites (Blacklist)</h2>
-                    <div class="flex-row">
-                        <input type="text" id="url-input" placeholder="e.g. facebook.com">
-                        <button id="add-url" class="btn">Block</button>
-                    </div>
-                    <div id="url-list" class="tag-container"></div>
-                </div>
-                <div class="card">
-                    <h2>Allowed Sites (Whitelist)</h2>
-                    <div class="flex-row">
-                        <input type="text" id="allowed-url-input" placeholder="e.g. wikipedia.org">
-                        <button id="add-allowed-url" class="btn btn-success">Allow</button>
-                    </div>
-                    <div id="allowed-url-list" class="tag-container"></div>
-                </div>
-                <div class="card">
-                    <h2>Keyword Blocking</h2>
-                    <div class="flex-row">
-                        <input type="text" id="keyword-input" placeholder="e.g. gambling">
-                        <button id="add-keyword" class="btn">Add</button>
-                    </div>
-                    <div id="keyword-list" class="tag-container"></div>
-                </div>
-            </section>
+        <!-- Rules Tab -->
+        <section id="tab-rules" class="tab-content hidden">
+            <div class="card">
+                <div class="card-header">Website Rules</div>
+                <input type="text" id="url-input" placeholder="Block a site...">
+                <button id="add-url" style="margin-top: 8px; width: 100%;">Add Block</button>
+                <div id="url-list" style="margin-top: 12px;"></div>
+            </div>
+            <div class="card">
+                <div class="card-header">Keywords</div>
+                <input type="text" id="keyword-input" placeholder="Restrict word...">
+                <button id="add-keyword" style="margin-top: 8px; width: 100%;">Add Word</button>
+                <div id="keyword-list" style="margin-top: 12px;"></div>
+            </div>
+        </section>
 
-            <!-- Tab: Time Limits -->
-            <section id="tab-time" class="tab-content hidden">
-                <div class="header">
-                    <h1>Time Management</h1>
-                    <p>Control when and for how long browsing is allowed.</p>
+        <!-- Time Tab -->
+        <section id="tab-time" class="tab-content hidden">
+            <div class="card">
+                <div class="card-header">Daily Quota (Min)</div>
+                <input type="number" id="dailyQuota">
+            </div>
+            <div class="card">
+                <div class="card-header">Bedtime (Off-Hours)</div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="time" id="offStart">
+                    <input type="time" id="offEnd">
                 </div>
-                <div class="card">
-                    <div class="setting-row">
-                        <div>
-                            <label style="margin:0">Enable Time Restrictions</label>
-                            <p style="margin:4px 0 0; font-size: 0.75rem; color: var(--text-muted);">Applies quota and off-hours</p>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="timeEnabled">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="card">
-                    <h2>Daily Quota</h2>
-                    <div class="form-group">
-                        <label>Maximum browsing time (minutes)</label>
-                        <input type="number" id="dailyQuota" min="1">
-                    </div>
-                </div>
-                <div class="card">
-                    <h2>Off-Hours</h2>
-                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 16px;">Browsing is disabled between these times.</p>
-                    <div class="flex-row">
-                        <div class="form-group" style="flex: 1;">
-                            <label>Start Time</label>
-                            <input type="time" id="offStart">
-                        </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label>End Time</label>
-                            <input type="time" id="offEnd">
-                        </div>
-                    </div>
-                </div>
-                <div class="flex-row">
-                    <button id="save-time" class="btn" style="flex:1">Apply Time Settings</button>
-                    <button id="reset-usage" class="btn btn-danger" style="flex:1">Reset Today's Usage</button>
-                </div>
-            </section>
+            </div>
+            <button id="save-time" style="width: 100%;">Save Changes</button>
+        </section>
+    </div>
 
-            <!-- Tab: Apps -->
-            <section id="tab-apps" class="tab-content hidden">
-                <div class="header">
-                    <h1>Platform Controls</h1>
-                    <p>Fine-grained control over specific sites.</p>
-                </div>
-                <div class="card">
-                    <h2>YouTube</h2>
-                    <div class="setting-row">
-                        <label>Block YouTube Shorts</label>
-                        <label class="switch"><input type="checkbox" id="ytShorts"><span class="slider"></span></label>
-                    </div>
-                    <div class="setting-row">
-                        <label>Disable Comments</label>
-                        <label class="switch"><input type="checkbox" id="ytComments"><span class="slider"></span></label>
-                    </div>
-                    <div class="setting-row">
-                        <label>Block Entire Platform</label>
-                        <label class="switch"><input type="checkbox" id="ytVideos"><span class="slider"></span></label>
-                    </div>
-                </div>
-                <div class="card">
-                    <h2>TikTok</h2>
-                    <div class="setting-row">
-                        <label>Block TikTok Website</label>
-                        <label class="switch"><input type="checkbox" id="ttEnabled"><span class="slider"></span></label>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Tab: Logs -->
-            <section id="tab-logs" class="tab-content hidden">
-                <div class="header">
-                    <h1>Activity Logs</h1>
-                    <p>Monitor browsing history.</p>
-                </div>
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
-                        <span style="font-size: 0.875rem; color: var(--text-muted);">Showing last 1000 entries</span>
-                        <button id="clear-logs" class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;">Clear All</button>
-                    </div>
-                    <table class="log-table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Website URL</th>
-                            </tr>
-                        </thead>
-                        <tbody id="log-container"></tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Tab: Settings -->
-            <section id="tab-settings" class="tab-content hidden">
-                <div class="header">
-                    <h1>General Settings</h1>
-                    <p>Security and global options.</p>
-                </div>
-                <div class="card">
-                    <h2>Safety</h2>
-                    <div class="setting-row">
-                        <div>
-                            <label style="margin:0">Enforce SafeSearch</label>
-                            <p style="margin:4px 0 0; font-size: 0.75rem; color: var(--text-muted);">Forces strict results on Google and Bing</p>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="safeSearch">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="card">
-                    <h2>Security</h2>
-                    <div class="form-group">
-                        <label>Change Master PIN</label>
-                        <div class="flex-row">
-                            <input type="password" id="new-pin" placeholder="New 4-digit PIN">
-                            <button id="save-pin" class="btn">Update PIN</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-    </main>
+    <nav class="bottom-nav hidden" id="nav-bar">
+        <div class="nav-btn active" data-tab="tab-home"><span>🏠</span>Home</div>
+        <div class="nav-btn" data-tab="tab-rules"><span>🛡️</span>Rules</div>
+        <div class="nav-btn" data-tab="tab-time"><span>⏱️</span>Time</div>
+        <div class="nav-btn" id="open-settings-full"><span>⚙️</span>More</div>
+    </nav>
 
     <script src="options.js"></script>
 </body>
